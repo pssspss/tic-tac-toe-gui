@@ -171,7 +171,48 @@
 - **Tests**:
   - `python -c "import gui.interface"`: ✅ passed
   - `pytest -q`: 12 passed in 0.07s ✅
-- **What's Still Missing**: Nothing in the GUI spec. All visual and navigation polish completed; fully prepared for backend engine handoff.
+
+### Menu Restructure — Single Page Game Mode Selection
+- **Status**: ✅ completed (2026-09-14)
+- **Changes Implemented**:
+  - **Unified "Play Game" Screen (No Extra Pages)**:
+    - Removed separate `AI vs AI` button from `MainMenuScreen`, routing all gameplay modes through `Play Game`.
+    - Consolidated all 3 playable game modes directly into [PlayGameScreen](file:///d:/Github/tic-tac-toe-gui/gui/interface.py):
+      1. `Human vs Heuristic` (launches game in heuristic AI mode)
+      2. `Human vs Reinforcement Learning` (launches game in Q-learning AI mode)
+      3. `Heuristic Function vs Reinforcement Learning` (launches AI vs AI battle)
+      4. `← Back` (returns to `MainMenuScreen`)
+    - Removed `2-Player` mode and intermediate `Single Player` sub-menu completely from the user flow.
+  - **Layout & Typography Accommodations**:
+    - Expanded `left_col_width` (up to 520px) and `menu_width` (up to 460px) in `compute_layout`.
+    - Added `wraplength=440` and `justify="center"` to menu buttons for clean presentation across all desktop resolutions.
+  - **GameScreen HUD**:
+    - Mode descriptions updated to `"Mode: Human vs Heuristic AI"`, `"Mode: Human vs Reinforcement Learning AI"`, and `"Mode: Heuristic Function vs Reinforcement Learning AI"`.
+  - **Rebuilt Executables & Tests**:
+    - Expanded `tests/test_interface.py` to 14 tests (`test_play_game_screen_buttons`, `test_main_menu_screen_buttons`).
+    - Recompiled `dist/TicTacToe.exe` via PyInstaller.
+- **Tests**:
+  - `pytest -q`: 14 passed in 0.20s ✅
+- **What's Still Missing**: Nothing. Ready for backend engine integration.
+
+### Menu Restructure — Direct Game Modes in Main Menu
+- **Status**: ✅ completed (2026-09-14)
+- **Changes Implemented**:
+  - **Flattened Navigation (No Extra "Play Game" Slide)**:
+    - Replaced the intermediate "Play Game" menu option on [MainMenuScreen](file:///d:/Github/tic-tac-toe-gui/gui/interface.py#L814) with all 3 game mode options directly on the Main Menu:
+      1. `Human vs Heuristic` (launches gameplay in heuristic AI mode)
+      2. `Human vs Reinforcement Learning` (launches gameplay in Q-learning AI mode)
+      3. `Heuristic Function vs Reinforcement Learning` (launches AI vs AI gameplay)
+      4. `Train Q-Learning` (routes to `COMING_SOON` placeholder)
+      5. `Evaluation` (routes to `COMING_SOON` placeholder)
+      6. `← Back` (returns to `MainWindowScreen`)
+  - **Layout & Sizing Polish**:
+    - Updated `compute_layout` to start menu buttons at `menu_y = max(95, int(h * 0.16))`.
+    - Added configurable `pady` and `ipady` support to `add_menu_button`, setting `pady=6, ipady=9` for the 6-button stack to fit with balanced vertical spacing across resolutions.
+  - **Tests & Artifacts**:
+    - Updated `tests/test_interface.py` to verify `MainMenuScreen` contains the direct modes and no longer contains `Play Game`.
+    - Verified all 14 tests pass (`pytest` 14/14 ✅).
+    - Rebuilt `dist/TicTacToe.exe` via PyInstaller.
 
 ---
 
@@ -221,5 +262,5 @@ tic-tac-toe-gui/
 │       └── Gameplay background/
 │           └── Generated Image September 13, 2026 - 10_06PM.jpg
 └── tests/
-    └── test_interface.py   ← 12 tests
+    └── test_interface.py   ← 14 tests
 ```

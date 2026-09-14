@@ -106,12 +106,12 @@ def compute_layout(width: int, height: int) -> dict:
 
     # Left column bounds (FC-style menu panel)
     left_col_x0 = max(28, int(w * 0.05))
-    left_col_width = min(480, max(300, int(w * 0.35)))
+    left_col_width = min(520, max(320, int(w * 0.36)))
 
     # Menu button stack: centered within left column
-    menu_width = min(420, max(280, int(left_col_width * 0.90)))
+    menu_width = min(460, max(300, int(left_col_width * 0.92)))
     menu_x = int(left_col_x0 + (left_col_width - menu_width) * 0.5)
-    menu_y = max(110, int(h * 0.20))
+    menu_y = max(95, int(h * 0.16))
 
     # Ambient board placed in remaining right area
     right_area_x0 = left_col_x0 + left_col_width
@@ -568,6 +568,8 @@ class MenuTemplateScreen(BaseScreen):
         text: str,
         command: callable,
         accent: bool = False,
+        pady: int = 9,
+        ipady: int = 12,
     ) -> tk.Button:
         """Create and pack an enlarged, styled menu button in the left panel.
 
@@ -592,8 +594,10 @@ class MenuTemplateScreen(BaseScreen):
             highlightcolor=COLOR_ACCENT,
             cursor="hand2",
             command=command,
+            wraplength=440,
+            justify="center",
         )
-        btn.pack(fill="x", pady=9, ipady=12, padx=8)
+        btn.pack(fill="x", pady=pady, ipady=ipady, padx=8)
 
         def _on_enter(event):
             btn.configure(bg=COLOR_BTN_HOVER_BG, fg=COLOR_BTN_HOVER_FG)
@@ -808,47 +812,87 @@ class MainWindowScreen(MenuTemplateScreen):
 
 
 class MainMenuScreen(MenuTemplateScreen):
-    """Main Menu screen with game mode and navigation choices."""
+    """Main Menu screen with direct game mode and navigation choices."""
 
     def __init__(self, parent: tk.Frame, app: App) -> None:
         super().__init__(parent, app, title="MAIN MENU")
-        self.add_menu_button("Play Game", lambda: self.app.transition_to(PLAY_GAME))
-        self.add_menu_button("AI vs AI", lambda: self.app.transition_to(AI_VS_AI))
+        self.add_menu_button(
+            "Human vs Heuristic",
+            lambda: self.app.transition_to(GAME, mode=MODE_HUMAN_VS_HEURISTIC),
+            pady=6,
+            ipady=9,
+        )
+        self.add_menu_button(
+            "Human vs Reinforcement Learning",
+            lambda: self.app.transition_to(GAME, mode=MODE_HUMAN_VS_QLEARNING),
+            pady=6,
+            ipady=9,
+        )
+        self.add_menu_button(
+            "Heuristic Function vs Reinforcement Learning",
+            lambda: self.app.transition_to(GAME, mode=MODE_AI_VS_AI),
+            pady=6,
+            ipady=9,
+        )
         self.add_menu_button(
             "Train Q-Learning",
             lambda: self.app.transition_to(COMING_SOON, return_to=MAIN_MENU, feature="Train Q-Learning"),
+            pady=6,
+            ipady=9,
         )
         self.add_menu_button(
             "Evaluation",
             lambda: self.app.transition_to(COMING_SOON, return_to=MAIN_MENU, feature="Evaluation"),
+            pady=6,
+            ipady=9,
         )
-        self.add_menu_button("← Back", lambda: self.app.transition_to(MAIN_WINDOW), accent=True)
+        self.add_menu_button(
+            "← Back",
+            lambda: self.app.transition_to(MAIN_WINDOW),
+            accent=True,
+            pady=6,
+            ipady=9,
+        )
 
 
 class PlayGameScreen(MenuTemplateScreen):
-    """Play Game mode selection screen (Single Player vs 2-Player)."""
+    """Play Game mode selection screen with all game modes on a single page."""
 
     def __init__(self, parent: tk.Frame, app: App) -> None:
         super().__init__(parent, app, title="PLAY GAME")
-        self.add_menu_button("Single Player", lambda: self.app.transition_to(SINGLE_PLAYER))
-        self.add_menu_button("2-Player", lambda: self.app.transition_to(GAME, mode=MODE_HUMAN_VS_HUMAN))
-        self.add_menu_button("← Back", lambda: self.app.transition_to(MAIN_MENU), accent=True)
-
-
-class SinglePlayerScreen(MenuTemplateScreen):
-    """Single Player opponent selection screen (Heuristic vs Q-Learning)."""
-
-    def __init__(self, parent: tk.Frame, app: App) -> None:
-        super().__init__(parent, app, title="SINGLE PLAYER")
         self.add_menu_button(
             "Human vs Heuristic",
             lambda: self.app.transition_to(GAME, mode=MODE_HUMAN_VS_HEURISTIC),
         )
         self.add_menu_button(
-            "Human vs Q-Learning",
+            "Human vs Reinforcement Learning",
             lambda: self.app.transition_to(GAME, mode=MODE_HUMAN_VS_QLEARNING),
         )
-        self.add_menu_button("← Back", lambda: self.app.transition_to(PLAY_GAME), accent=True)
+        self.add_menu_button(
+            "Heuristic Function vs Reinforcement Learning",
+            lambda: self.app.transition_to(GAME, mode=MODE_AI_VS_AI),
+        )
+        self.add_menu_button("← Back", lambda: self.app.transition_to(MAIN_MENU), accent=True)
+
+
+class SinglePlayerScreen(MenuTemplateScreen):
+    """Single Player opponent selection screen (Legacy redirect to PlayGameScreen)."""
+
+    def __init__(self, parent: tk.Frame, app: App) -> None:
+        super().__init__(parent, app, title="PLAY GAME")
+        self.add_menu_button(
+            "Human vs Heuristic",
+            lambda: self.app.transition_to(GAME, mode=MODE_HUMAN_VS_HEURISTIC),
+        )
+        self.add_menu_button(
+            "Human vs Reinforcement Learning",
+            lambda: self.app.transition_to(GAME, mode=MODE_HUMAN_VS_QLEARNING),
+        )
+        self.add_menu_button(
+            "Heuristic Function vs Reinforcement Learning",
+            lambda: self.app.transition_to(GAME, mode=MODE_AI_VS_AI),
+        )
+        self.add_menu_button("← Back", lambda: self.app.transition_to(MAIN_MENU), accent=True)
 
 
 class AIVsAIScreen(MenuTemplateScreen):
@@ -857,7 +901,7 @@ class AIVsAIScreen(MenuTemplateScreen):
     def __init__(self, parent: tk.Frame, app: App) -> None:
         super().__init__(parent, app, title="AI VS AI")
         self.add_menu_button(
-            "Start AI vs AI Game",
+            "Heuristic Function vs Reinforcement Learning",
             lambda: self.app.transition_to(GAME, mode=MODE_AI_VS_AI),
         )
         self.add_menu_button("← Back", lambda: self.app.transition_to(MAIN_MENU), accent=True)
@@ -940,7 +984,7 @@ class GameScreen(BaseScreen):
         self._bg_image_id: int | None = None
 
         # Game state (In-Memory Data Schema)
-        self.current_mode = MODE_HUMAN_VS_HUMAN
+        self.current_mode = MODE_HUMAN_VS_HEURISTIC
         self._players: list[PlayerInfo] = []
         self._current_player_idx = 0
         self._toss_winner_idx: int | None = None
@@ -1020,7 +1064,7 @@ class GameScreen(BaseScreen):
         self._canvas.bind("<Configure>", self._on_resize)
         self._canvas.bind("<Button-1>", self._on_canvas_click)
 
-    def on_show(self, mode: str = MODE_HUMAN_VS_HUMAN, **kwargs) -> None:
+    def on_show(self, mode: str = MODE_HUMAN_VS_HEURISTIC, **kwargs) -> None:
         """Initialize game mode, trigger swift transition, and launch pre-game setup."""
         self.current_mode = mode
         self._ensure_game_bg()
@@ -1072,21 +1116,21 @@ class GameScreen(BaseScreen):
                 PlayerInfo("Player (Human)", PLAYER_HUMAN),
                 PlayerInfo("AI (Heuristic)", PLAYER_HEURISTIC_AI),
             ]
-            mode_desc = "Mode: Single Player (Human vs Heuristic AI)"
+            mode_desc = "Mode: Human vs Heuristic AI"
         elif mode == MODE_HUMAN_VS_QLEARNING:
             # TODO(BACKEND): load q_table.pkl when entering Q-learning mode
             self._players = [
                 PlayerInfo("Player (Human)", PLAYER_HUMAN),
-                PlayerInfo("AI (Q-Learning)", PLAYER_QLEARNING_AI),
+                PlayerInfo("AI (Reinforcement Learning)", PLAYER_QLEARNING_AI),
             ]
-            mode_desc = "Mode: Single Player (Human vs Q-Learning AI)"
+            mode_desc = "Mode: Human vs Reinforcement Learning AI"
         else:  # MODE_AI_VS_AI
             # TODO(BACKEND): initialize GameEngine and AI vs AI battle
             self._players = [
-                PlayerInfo("AI 1 (Heuristic)", PLAYER_HEURISTIC_AI),
-                PlayerInfo("AI 2 (Q-Learning)", PLAYER_QLEARNING_AI),
+                PlayerInfo("AI 1 (Heuristic Function)", PLAYER_HEURISTIC_AI),
+                PlayerInfo("AI 2 (Reinforcement Learning)", PLAYER_QLEARNING_AI),
             ]
-            mode_desc = "Mode: AI vs AI (Demonstration)"
+            mode_desc = "Mode: Heuristic Function vs Reinforcement Learning AI"
 
         self._canvas.itemconfig("mode_label", text=mode_desc)
         self._canvas.itemconfig("turn_indicator", text="Pre-Game Toss", fill=COLOR_CHALK_DIM)

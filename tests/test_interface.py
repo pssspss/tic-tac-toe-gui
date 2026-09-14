@@ -144,3 +144,49 @@ def test_app_transition_method():
     from gui.interface import App
     assert hasattr(App, "transition_to")
     assert callable(getattr(App, "transition_to"))
+
+
+def test_play_game_screen_buttons():
+    """Verify PlayGameScreen contains all 3 game modes on a single page and removes 2-Player."""
+    import tkinter as tk
+    from gui.interface import App, PlayGameScreen
+
+    root = tk.Tk()
+    root.withdraw()
+    try:
+        dummy_app = App.__new__(App)
+        dummy_app.transition_to = lambda *a, **k: None
+        screen = PlayGameScreen(root, dummy_app)
+        btns = [w.cget("text") for w in screen._menu_frame.winfo_children() if isinstance(w, tk.Button)]
+        assert "Human vs Heuristic" in btns
+        assert "Human vs Reinforcement Learning" in btns
+        assert "Heuristic Function vs Reinforcement Learning" in btns
+        assert any("Back" in b for b in btns)
+        assert "2-Player" not in btns
+        assert "Single Player" not in btns
+    finally:
+        root.destroy()
+
+
+def test_main_menu_screen_buttons():
+    """Verify MainMenuScreen directly includes game modes and removes intermediate Play Game option."""
+    import tkinter as tk
+    from gui.interface import App, MainMenuScreen
+
+    root = tk.Tk()
+    root.withdraw()
+    try:
+        dummy_app = App.__new__(App)
+        dummy_app.transition_to = lambda *a, **k: None
+        screen = MainMenuScreen(root, dummy_app)
+        btns = [w.cget("text") for w in screen._menu_frame.winfo_children() if isinstance(w, tk.Button)]
+        assert "Play Game" not in btns
+        assert "Human vs Heuristic" in btns
+        assert "Human vs Reinforcement Learning" in btns
+        assert "Heuristic Function vs Reinforcement Learning" in btns
+        assert "Train Q-Learning" in btns
+        assert "Evaluation" in btns
+        assert any("Back" in b for b in btns)
+    finally:
+        root.destroy()
+
